@@ -1,4 +1,3 @@
-```markdown
 # Requirements Document
 
 ## Introduction
@@ -43,8 +42,12 @@ patchduel という 2 人用のボードゲームの最小実装。プレイヤ�
 
 #### Acceptance Criteria
 
-1. The system shall ゲームを開始するときにプレイヤーを 1 人で初期化できること。
-2. When プレイヤーが配置とターン終了を完了したとき, the system shall その行為を記録し、次の操作（UI 上の状態更新）を反映する。
+1. When ゲームが開始したとき, the system shall プレイヤーのタイムマーカーをグリッドの左上のマス（x=0,y=0）に初期配置する。
+2. The system shall ゲームを開始するときにプレイヤーを 1 人で初期化できること。
+3. When プレイヤーが配置とターン終了を完了したとき, the system shall その行為を記録し、次の操作（UI 上の状態更新）を反映する。
 
 <!-- 追加の要件はユーザーのフィードバックにより反復追加する -->
+
+```
+
 ```
