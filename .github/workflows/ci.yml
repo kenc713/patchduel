@@ -1,0 +1,48 @@
+name: CI
+
+# シンプルな CI ワークフロー (Push / Pull Request)
+# - ブランチ: `main` と `time-marker-placement` への push、及び main 宛ての PR で実行
+on:
+  push:
+    branches: [main, time-marker-placement]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    # ジョブ名（GitHub Actions UI に表示される）
+    name: Run tests
+    # 実行環境（Ubuntu の最新ランナー）
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # テストを実行する Node.js のバージョン（将来的に複数指定可能）
+        node-version: [18.x]
+
+    steps:
+      # リポジトリをチェックアウト（必須）
+      # git clone相当の処理
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Node.js をセットアップ（キャッシュ有効）
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      # 依存関係をクリーンインストール
+      # `npm ci` は package-lock.json に基づいて再現性のあるインストールを行います
+      - name: Install dependencies
+        run: npm ci
+
+      # テストを実行
+      # `CI: true` を環境変数で渡すことで一部テストランナーが CI モードで動作します
+      - name: Run tests
+        run: npm test -- --run
+        env:
+          CI: true
+# 注意点:
+# - ローカルでのブラウザを伴う E2E（Playwright 等）は追加のセットアップが必要です。
+# - キャッシュの挙動を調整したい場合は `actions/cache` を追加で導入してください。
