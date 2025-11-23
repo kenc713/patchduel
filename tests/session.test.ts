@@ -5,7 +5,8 @@ describe('session initialization', () => {
 
   // 各ケース実行前に状態を初期化
   beforeEach(() => {
-    useGame.setState({ markers: [], selected: null, activePlayer: 'p2' })
+    // セッション初期化で初期マーカーを配置
+    useGame.getState().initSession('p1')
   })
 
   // 単一プレイヤーのセッションを初期化する関数の検証
