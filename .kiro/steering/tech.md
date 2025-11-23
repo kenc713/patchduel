@@ -12,3 +12,10 @@
 - TypeScript を基本とし、ドメインモデルの型定義を重視する。
 - 小さなコンポーネントと明確な契約（Props / State）で設計する。
 - 自動テストを CI に組み込み、TDD を推奨する。
+
+## 最近の実装メモ
+
+- CI: GitHub Actions に簡易な `CI` ワークフローを追加し、`npm ci` → `npm test` を実行するようにしています（`.github/workflows/ci.yml`）。
+- E2E 方針: 推奨は `Playwright` だが、まずは `vitest` + `jsdom` を用いた軽量な E2E スモークテストを導入済み。フルブラウザ E2E が必要になったら Playwright を追加する計画。
+
+（このセクションは運用ノートであり、将来の変更や CI 拡張を追記していく。）
