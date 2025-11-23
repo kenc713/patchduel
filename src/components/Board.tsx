@@ -5,9 +5,10 @@ import useGame from "../state/useGame";
 const SIZE = 8;
 
 export default function Board() {
-  // ゲームの状態からマーカー情報とマーカー設置関数を取得
+  // ゲームの状態からマーカー情報とマーカー設置関数、現在のターンのプレイヤーを取得
   const board = useGame((s) => s.markers);
   const placeMarker = useGame((s) => s.placeMarker);
+  const activePlayer = useGame((s) => s.activePlayer);
 
   // ホバー状態をローカルステートで管理
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
@@ -50,13 +51,13 @@ export default function Board() {
             // クリックによる選択状態の管理
             onClick={() => {
               setSelected({ x, y });
-              placeMarker("p1", x, y);
+              placeMarker(activePlayer, x, y);
             }}
             // キーボード操作による選択状態の管理
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 setSelected({ x, y });
-                placeMarker("p1", x, y);
+                placeMarker(activePlayer, x, y);
               }
             }}
             // ホバー時の状態管理

@@ -17,11 +17,18 @@ type State = {
   // タイムマーカーの配置状況を取得する関数
   getBoard: () => TimeMarker[]
   
+  // 指定座標のマーカーを返すヘルパー
+  getMarkerAt: (x: number, y: number) => TimeMarker | undefined
+  
   // 現在選択されたセル (UI 共有用)
   selected: { x: number; y: number } | null
 
   // 選択セルを設定する (nullで解除)
   setSelected: (pos: { x: number; y: number } | null) => void
+  
+  // アクティブプレイヤーID（UIがどのプレイヤーとして操作するか）
+  activePlayer: string
+  setActivePlayer: (id: string) => void
 }
 
 /**
@@ -43,11 +50,18 @@ const useGame = create<State>((set, get) => ({
   // 選択は共有ステートとして保持（初期は未選択）
   selected: null,
 
+  // 初期のアクティブプレイヤー（UIの操作主体）。デフォルトは 'p2' とする。
+  activePlayer: 'p2',
+  setActivePlayer: (id) => set(() => ({ activePlayer: id })),
+
   // ボードにタイムマーカーを配置する関数を定義
   placeMarker: (playerId, x, y) => {
     if (x < 0 || x > 7 || y < 0 || y > 7) return false
     const exists = get().markers.find((m) => m.x === x && m.y === y)
     if (exists) return false
+    // 各プレイヤーは1つのみマーカーを持つ不変条件を強制
+    const own = get().markers.find((m) => m.playerId === playerId)
+    if (own) return false
     set((s) => ({ markers: [...s.markers, { id: `m-${Date.now()}`, playerId, x, y, placedAt: new Date().toISOString() }] }))
     return true
   },
@@ -62,6 +76,9 @@ const useGame = create<State>((set, get) => ({
 
   // 配置されているマーカーを取得する関数を定義
   getBoard: () => get().markers,
+
+  // 指定座標のマーカーを返すヘルパー関数を定義
+  getMarkerAt: (x, y) => get().markers.find(m => m.x === x && m.y === y),
 }))
 
 export default useGame
