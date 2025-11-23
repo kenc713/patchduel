@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import useGame from "../state/useGame";
 
 // 正方形ボードの一辺
@@ -8,6 +8,13 @@ export default function Board() {
   // ゲームの状態からマーカー情報とマーカー設置関数を取得
   const board = useGame((s) => s.markers);
   const placeMarker = useGame((s) => s.placeMarker);
+
+  // ホバー状態をローカルステートで管理
+  const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
+
+  // 選択状態を取得
+  const selected = useGame((s) => s.selected);
+  const setSelected = useGame((s) => s.setSelected);
 
   return (
     <div
@@ -25,14 +32,36 @@ export default function Board() {
         // 条件を満たす最初の要素が返され、markerに格納される
         const marker = board.find((m) => m.x === x && m.y === y);
 
+        // ホバー状態と選択状態を判定
+        const isHover = hover?.x === x && hover?.y === y;
+        const isSelected = selected?.x === x && selected?.y === y;
+
         return (
           <div
             key={`${x}-${y}`}
-            className="cell"
+            className={`cell ${isHover ? "hover" : ""} ${
+              isSelected ? "selected" : ""
+            }`}
             data-x={x}
             data-y={y}
             role="gridcell"
-            onClick={() => placeMarker("p1", x, y)}
+            tabIndex={0}
+            aria-selected={isSelected}
+            // クリックによる選択状態の管理
+            onClick={() => {
+              setSelected({ x, y });
+              placeMarker("p1", x, y);
+            }}
+            // キーボード操作による選択状態の管理
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setSelected({ x, y });
+                placeMarker("p1", x, y);
+              }
+            }}
+            // ホバー時の状態管理
+            onMouseEnter={() => setHover({ x, y })}
+            onMouseLeave={() => setHover(null)}
           >
             {/* マーカーが存在する場合にのみ表示 */}
             {marker ? <div className="marker">●</div> : null}

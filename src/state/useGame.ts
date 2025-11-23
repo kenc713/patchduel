@@ -16,6 +16,12 @@ type State = {
 
   // タイムマーカーの配置状況を取得する関数
   getBoard: () => TimeMarker[]
+  
+  // 現在選択されたセル (UI 共有用)
+  selected: { x: number; y: number } | null
+
+  // 選択セルを設定する (nullで解除)
+  setSelected: (pos: { x: number; y: number } | null) => void
 }
 
 /**
@@ -34,6 +40,9 @@ const useGame = create<State>((set, get) => ({
     },
   ],
 
+  // 選択は共有ステートとして保持（初期は未選択）
+  selected: null,
+
   // ボードにタイムマーカーを配置する関数を定義
   placeMarker: (playerId, x, y) => {
     if (x < 0 || x > 7 || y < 0 || y > 7) return false
@@ -47,6 +56,9 @@ const useGame = create<State>((set, get) => ({
   endTurn: (_playerId) => {
     // minimal implementation: no-op for now, could update state or record log
   },
+
+  // 選択セルを設定
+  setSelected: (pos) => set(() => ({ selected: pos })),
 
   // 配置されているマーカーを取得する関数を定義
   getBoard: () => get().markers,
