@@ -29,6 +29,9 @@ type State = {
   // アクティブプレイヤーID（UIがどのプレイヤーとして操作するか）
   activePlayer: string
   setActivePlayer: (id: string) => void
+  
+  // セッション初期化用: 単一プレイヤーセッションを初期化する
+  initSession: (playerId: string) => void
 }
 
 /**
@@ -53,6 +56,17 @@ const useGame = create<State>((set, get) => ({
   // 初期のアクティブプレイヤー（UIの操作主体）。デフォルトは 'p2' とする。
   activePlayer: 'p2',
   setActivePlayer: (id) => set(() => ({ activePlayer: id })),
+
+  // セッション初期化: 単一プレイヤーセッションを初期化し、(0,0) に初期マーカーを配置する
+  initSession: (playerId: string) => {
+    set(() => ({
+      markers: [
+        { id: `m-init-${Date.now()}`, playerId, x: 0, y: 0, placedAt: new Date().toISOString() }
+      ],
+      activePlayer: playerId,
+      selected: null
+    }))
+  },
 
   // ボードにタイムマーカーを配置する関数を定義
   placeMarker: (playerId, x, y) => {
