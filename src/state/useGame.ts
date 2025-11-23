@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { TimeMarker } from '../models/timeMarker'
+import useSession from './session'
 /**
  * Zustandを使ったグローバルステート管理
  */
@@ -30,15 +31,6 @@ type State = {
   activePlayer: string
   setActivePlayer: (id: string) => void
   
-  // セッション情報と履歴
-  session: {
-    sessionId: string
-    startedAt: string
-    activePlayer: string
-    ended: boolean
-    history: Array<{ type: 'place' | 'endTurn'; playerId: string; payload?: any; timestamp: string }>
-  }
-
   // セッション初期化用: 単一プレイヤーセッションを初期化する
   initSession: (playerId: string) => void
 }
@@ -66,54 +58,50 @@ const useGame = create<State>((set, get) => ({
   activePlayer: 'p2',
   setActivePlayer: (id) => set(() => ({ activePlayer: id })),
 
-  // セッションの初期メタデータ（最小実装）
-  session: {
-    sessionId: `s-0`,
-    startedAt: new Date().toISOString(),
-    activePlayer: 'p2',
-    ended: false,
-    history: [],
-  },
-
   // セッション初期化: 単一プレイヤーセッションを初期化し、(0,0) に初期マーカーを配置する
   initSession: (playerId: string) => {
     const markerId = `m-init-${Date.now()}`
     const now = new Date().toISOString()
+    // set markers and active player
     set(() => ({
       markers: [
         { id: markerId, playerId, x: 0, y: 0, placedAt: now }
       ],
       activePlayer: playerId,
       selected: null,
-      session: {
-        sessionId: `s-${Date.now()}`,
-        startedAt: now,
-        activePlayer: playerId,
-        ended: false,
-        history: [ { type: 'place', playerId, payload: { x: 0, y: 0, markerId }, timestamp: now } ]
-      }
     }))
+    // delegate session metadata to useSession
+    useSession.getState().initSession(playerId, { x: 0, y: 0, markerId })
   },
 
   // ボードにタイムマーカーを配置する関数を定義
   placeMarker: (playerId, x, y) => {
+
+    // タイムマーカーを配置しようとするマスがボードの範囲外ならfalseを返却
     if (x < 0 || x > 7 || y < 0 || y > 7) return false
+
+    // タイムマーカーを配置しようとするマスにすでにマーカーが存在するならfalseを返却
     const exists = get().markers.find((m) => m.x === x && m.y === y)
     if (exists) return false
+
     // 各プレイヤーは1つのみマーカーを持つ不変条件を強制
     const own = get().markers.find((m) => m.playerId === playerId)
     if (own) return false
+
+    // マーカーを記録
     const markerId = `m-${Date.now()}`
     const ts = new Date().toISOString()
-    set((s) => ({ markers: [...s.markers, { id: markerId, playerId, x, y, placedAt: ts }], session: { ...s.session, history: [...s.session.history, { type: 'place', playerId, payload: { x, y, markerId }, timestamp: ts }] } }))
+    set((s) => ({ markers: [...s.markers, { id: markerId, playerId, x, y, placedAt: ts }] }))
+    
+    // セッションストアに記録
+    useSession.getState().recordPlace(playerId, { x, y, markerId })
     return true
   },
 
   // ターンを終了する関数を定義（現状は最小限の実装）
   endTurn: (playerId) => {
-    const ts = new Date().toISOString()
-    set((s) => ({ session: { ...s.session, history: [...s.session.history, { type: 'endTurn', playerId, timestamp: ts }] } }))
-    return true
+    // delegate to session store
+    return useSession.getState().endTurn(playerId)
   },
 
   // 選択セルを設定

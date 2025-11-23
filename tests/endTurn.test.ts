@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import useGame from '../src/state/useGame'
+import useSession from '../src/state/session'
 
 describe('endTurn behavior', () => {
   beforeEach(() => {
@@ -12,13 +13,14 @@ describe('endTurn behavior', () => {
     
     // 状態を取得して endTurn を呼び出す
     const s = useGame.getState()
-    const result = s.endTurn('p1')
+      // endTurn は成功を boolean で返す
+      const result = s.endTurn('p1')
 
     // 成功していることを確認
     expect(result).toBe(true)
 
     // セッション履歴に endTurn イベントが追加されていることを確認
-    const last = useGame.getState().session.history.slice(-1)[0]
+    const last = useSession.getState().history.slice(-1)[0]
     expect(last.type).toBe('endTurn')
     expect(last.playerId).toBe('p1')
     const markers = useGame.getState().markers.filter(m => m.playerId === 'p1')
