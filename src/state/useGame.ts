@@ -76,57 +76,56 @@ const useGame = create<State>((set, get) => ({
 
   // ボードにタイムマーカーを配置する関数を定義
   placeMarker: (playerId, x, y) => {
-
-    // タイムマーカーを配置しようとするマスがボードの範囲外ならfalseを返却
-    if (x < 0 || x > 7 || y < 0 || y > 7) return false
-
-    // 指定のマスに既にマーカーが存在するか確認
-    const exists = get().markers.find((m) => m.x === x && m.y === y)
-
-    // 既に他プレイヤーのマーカーが存在する場合は配置できない
-    if (exists && exists.playerId !== playerId) return false
-
-    // 自分のマーカーを取得
-    const ownIndex = get().markers.findIndex((m) => m.playerId === playerId)
     
-      // 現在のアクティブプレイヤーのみが配置できるようにする
-      if (playerId !== get().activePlayer) return false
-
-    // 記録用のタイムスタンプを生成
-    const ts = new Date().toISOString()
-
-    // すでに自分のマーカーが存在する場合はin-placeで座標を更新する
-    if (ownIndex >= 0) {
-      let prev: TimeMarker | undefined
-      set((s) => {
-        
-        // 変更前のマーカー情報を保存
-        prev = s.markers[ownIndex]  
-        
-        // 全プレイヤーのマーカーを含むマーカー配列をコピー 
-        const next = s.markers.slice()
-
-        // 自分のマーカーの座標と配置日時を更新
-        next[ownIndex] = { ...next[ownIndex], x, y, placedAt: ts }
-        
-        // 更新後のマーカー配列を返し、stateを更新
-        return { markers: next }
-      })
+    let success = false
+    let sessionPayload: any = null
+    
+    // 状態更新処理をすべて single updater 内で行うことで、操作を atomic に保証する
+    set((s) => {
       
-      // セッションストアに移動として記録（後方互換の optional フィールドを利用）
-      if (prev) {
-        useSession.getState().recordPlace(playerId, { markerId: prev.id, prevPosition: { x: prev.x, y: prev.y }, x, y, moved: true })
-      }
-      return true
-    }
+      // 指定の座標がボード範囲内であることを確認
+      if (x < 0 || x > 7 || y < 0 || y > 7) return s
 
-    // 新規配置（他プレイヤーによる占有は既に弾いている）
-    if (exists && exists.playerId === playerId) return false
-    const markerId = `m-${Date.now()}`
-    set((s) => ({ markers: [...s.markers, { id: markerId, playerId, x, y, placedAt: ts }] }))
-    // セッションストアに記録
-    useSession.getState().recordPlace(playerId, { x, y, markerId })
-    return true
+      // ターンチェック: アクティブプレイヤーのみ配置可能
+      if (playerId !== s.activePlayer) return s
+
+      // 他のプレイヤーが占有しているセルには置けない
+      const existsIndex = s.markers.findIndex((m) => m.x === x && m.y === y)
+      const exists = existsIndex >= 0 ? s.markers[existsIndex] : undefined
+      if (exists && exists.playerId !== playerId) return s
+
+      // 自分のマーカーが既に存在するか確認
+      const ownIndex = s.markers.findIndex((m) => m.playerId === playerId)
+
+      // 記録用のタイムスタンプを生成
+      const ts = new Date().toISOString()
+
+      if (ownIndex >= 0) {
+        // 既存のマーカーをインプレースで移動
+        const prev = s.markers[ownIndex]
+        const next = s.markers.slice()
+        next[ownIndex] = { ...next[ownIndex], x, y, placedAt: ts }
+        sessionPayload = { markerId: prev.id, prevPosition: { x: prev.x, y: prev.y }, x, y, moved: true }
+        success = true
+        return { markers: next }
+      }
+
+      // 新規配置は上の移動処理が実行されなかった場合のみ行う
+      else if (!exists) {
+        const markerId = `m-${Date.now()}`
+        sessionPayload = { x, y, markerId }
+        success = true
+        return { markers: [...s.markers, { id: markerId, playerId, x, y, placedAt: ts }] }
+      }
+
+      // fallback: no change
+      return s
+    })
+
+    if (success && sessionPayload) {
+      useSession.getState().recordPlace(playerId, sessionPayload)
+    }
+    return success
   },
 
   // ターンを終了する関数を定義（現状は最小限の実装）
