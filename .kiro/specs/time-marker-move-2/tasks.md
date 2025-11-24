@@ -9,7 +9,7 @@
 - `computeNewIndex(currentIndex, steps)` を純粋関数として実装し、`GOAL_INDEX` を超えないようにキャップする
 - 基本的な単体テストを書く（境界、無効入力、GOAL 到達）
 
-- [ ] 2. `applyMove` ロジックと TimeTrack モジュールの実装
+- [x] 2. `applyMove` ロジックと TimeTrack モジュールの実装
      \
      1,2,4,5
 
@@ -17,7 +17,7 @@
 - 原子的にマーカー位置を更新する `applyMove(playerId, steps)` を実装する（内部で `computeNewIndex` を使用）
 - `timeMarkerMoved` と `gameEnded` イベントを発行する（必要なペイロードを含む）
 
-- [ ] 3. `GameStateStore` の拡張（状態更新とクエリ可能性）
+- [x] 3. `GameStateStore` の拡張（状態更新とクエリ可能性）
      \
      2,4,5
 
@@ -39,9 +39,13 @@
 - `gameEnded` イベントをリッスンしてローカライズ済みのトーストを表示する
 - 将来の結果画面遷移用フックを用意する（現段階ではトースト表示で十分）
 
-- [ ] 6. コアロジックの単体テスト (P)
+- [x] 6. コアロジックの単体テスト (P)
      \
      1,2,5
+
+---
+
+追記: タスク 2 と 3 の最小実装と、コアロジックに関するテスト（`timeMarker.utils.test.ts` と `timeTrack.applyMove.test.ts`）を追加・実行し、ローカルで全テストが通過することを確認しました。
 
 - `computeNewIndex` の単体テスト（通常移動、GOAL 到達、オーバーシュートのキャップ、無効ステップ）
 - `indexToCoord` / `coordToIndex` のマッピングテスト（例: `indexToCoord(63) == {row:4,col:3}` を含む）

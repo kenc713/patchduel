@@ -20,6 +20,18 @@ type State = {
   
   // 指定座標のマーカーを返すヘルパー
   getMarkerAt: (x: number, y: number) => TimeMarker | undefined
+
+  // タイムトラック用のマーカー（線形インデックス管理）
+  timeMarkers?: { playerId: string; index: number }[]
+
+  // timeMarkers を上書きするヘルパー（テスト用リセット等）
+  setTimeMarkers?: (m: { playerId: string; index: number }[]) => void
+
+  // 指定プレイヤーの timeMarker インデックスを直接設定するヘルパー（テスト用）
+  setTimeMarkerIndex?: (playerId: string, index: number) => void
+
+  // 指定プレイヤーの現在の timeMarker インデックスを取得する
+  getTimeMarkerIndex?: (playerId: string) => number
   
   // 現在選択されたセル (UI 共有用)
   selected: { x: number; y: number } | null
@@ -57,6 +69,26 @@ const useGame = create<State>((set, get) => ({
   // 初期のアクティブプレイヤー（UIの操作主体）。デフォルトは 'p1' とする。
   activePlayer: 'p1',
   setActivePlayer: (id) => set(() => ({ activePlayer: id })),
+
+  // timeMarkers 初期値を提供（省略可能）
+  timeMarkers: [],
+
+  setTimeMarkers: (m) => set(() => ({ timeMarkers: m })),
+
+  setTimeMarkerIndex: (playerId, index) => set((s) => {
+    const arr = s.timeMarkers ? s.timeMarkers.slice() : []
+    const i = arr.findIndex((t) => t.playerId === playerId)
+    if (i >= 0) arr[i] = { ...arr[i], index }
+    else arr.push({ playerId, index })
+    return { timeMarkers: arr }
+  }),
+
+  getTimeMarkerIndex: (playerId) => {
+    const s = get()
+    const arr = s.timeMarkers || []
+    const t = arr.find((p) => p.playerId === playerId)
+    return t ? t.index : 0
+  },
 
   // セッション初期化: 単一プレイヤーセッションを初期化し、(0,0) に初期マーカーを配置する
   initSession: (playerId: string) => {
