@@ -14,54 +14,90 @@ export default function TileSelector({
   tileSteps = {},
   onSelect,
 }: Props) {
+  // 状態管理
   const [error, setError] = useState<string | null>(null);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
 
-  // タイルクリック時の処理
-  const handleClick = (id: string, available: boolean) => {
-    setError(null);
-    if (!available) {
-      setError("このタイルは選択できません");
-      return;
-    }
-    onSelect(id);
+  const total = tileIds.length;
+
+  /**
+   * 無限スクロールのためのインデックス処理関数
+   * @param i
+   * @returns
+   */
+  const clampIndex = (i: number) => {
+    if (total === 0) return 0;
+    // wrap around for infinite behavior
+    return ((i % total) + total) % total;
   };
 
-  // 横スクロール（無限風）にするためにリストを2回描画
-  const renderTiles = (repeatIndex: number) =>
-    tileIds.map((id, idx) => {
-      const available = availableTileIds.includes(id);
-      const steps = tileSteps[id] ?? 0;
-      return (
-        <button
-          key={`${id}-${repeatIndex}-${idx}`}
-          onClick={() => handleClick(id, available)}
-          aria-disabled={!available}
-          aria-label={`tile-${id}`}
-          style={{
-            minWidth: 48,
-            minHeight: 48,
-            marginRight: 8,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {String(steps)}
-        </button>
-      );
-    });
+  // 左ボタン押下ハンドラ
+  const handlePrev = () => {
+    setError(null);
+    setCurrentIndex((i) => clampIndex(i - 1));
+  };
+
+  // 右ボタン押下ハンドラ
+  const handleNext = () => {
+    setError(null);
+    setCurrentIndex((i) => clampIndex(i + 1));
+  };
+
+  // window size (visible tiles)
+  const WINDOW = 5;
+  const half = Math.floor(WINDOW / 2);
+
+  const visibleIndices = Array.from({ length: WINDOW }).map((_, i) =>
+    clampIndex(currentIndex - half + i)
+  );
 
   return (
-    <div>
-      <div
-        data-testid="tile-scroller"
-        style={{ overflowX: "auto", whiteSpace: "nowrap" }}
-      >
-        <div role="list" style={{ display: "inline-flex" }}>
-          {renderTiles(0)}
-          {renderTiles(1)}
+    <div style={{ marginTop: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <button aria-label="prev" onClick={handlePrev}>
+          ◀
+        </button>
+
+        <div style={{ display: "inline-flex", gap: 8 }}>
+          {visibleIndices.map((idx) => {
+            const id = tileIds[idx];
+            const available = availableTileIds.includes(id);
+            const steps = tileSteps[id] ?? 0;
+            const isCurrent = idx === currentIndex;
+            return (
+              <button
+                key={`tile-${id}-${idx}`}
+                onClick={() => {
+                  setError(null);
+                  if (!available) {
+                    setError("このタイルは選択できません");
+                    return;
+                  }
+                  setCurrentIndex(idx);
+                  onSelect(id);
+                }}
+                aria-disabled={!available}
+                aria-label={`tile-${id}`}
+                style={{
+                  minWidth: 56,
+                  minHeight: 56,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: isCurrent ? "2px solid #333" : "1px solid #ccc",
+                }}
+              >
+                {String(steps)}
+              </button>
+            );
+          })}
         </div>
+
+        <button aria-label="next" onClick={handleNext}>
+          ▶
+        </button>
       </div>
+
       {error && <div role="alert">{error}</div>}
     </div>
   );

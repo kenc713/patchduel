@@ -5,11 +5,10 @@ import { describe, it, expect } from "vitest";
 import TileSelector from "../src/components/TileSelector";
 
 describe("TileSelector", () => {
-  // TileSelector が33個のタイルを表示し、ボタンに名称ではなく数字（0-10）が表示されることを確認する
-  it("renders 33 tiles showing numeric step labels and handles selection", async () => {
+  // 左右ボタン付きの5タイルウィンドウを使用してパッチタイルを選択できることを確認する
+  it("uses left/right buttons to change selection, wraps around, and calls onSelect on click", async () => {
     const user = userEvent.setup();
     const tiles = Array.from({ length: 33 }).map((_, i) => `t${i + 1}`);
-    // available はすべて許可
     const available = [...tiles];
     const calls: string[] = [];
 
@@ -26,21 +25,33 @@ describe("TileSelector", () => {
       />
     );
 
-    // 33個のボタンが存在する
-    const buttons = screen.getAllByRole("button");
-    expect(buttons.length).toBe(33);
+    // 左右ボタンが存在する
+    const prev = screen.getByRole("button", { name: /prev/i });
+    const next = screen.getByRole("button", { name: /next/i });
+    expect(prev).toBeTruthy();
+    expect(next).toBeTruthy();
 
-    // 最初のボタンには数字が表示され、id名は表示されていない
-    const first = buttons[0];
-    expect(first).toHaveTextContent(String(stepsMap[tiles[0]]));
-    expect(first).not.toHaveTextContent(tiles[0]);
+    // 最初の中央表示タイルは tiles[0]（aria-label=`tile-<id>` で参照）
+    const currentBtn = screen.getByRole("button", { name: `tile-${tiles[0]}` });
+    expect(currentBtn).toHaveTextContent(String(stepsMap[tiles[0]]));
 
-    // コンテナは横スクロール可能（overflowX:auto のいずれか）
-    const list = screen.getByTestId("tile-scroller");
-    expect(list).toBeTruthy();
-
-    // ボタンをクリックすると onSelect が呼ばれる
-    await user.click(first);
+    // クリックすると onSelect が呼ばれる
+    await user.click(currentBtn);
     expect(calls).toContain(tiles[0]);
+
+    // next を押して選択を進め、中央に表示されるタイルが tiles[1] になる
+    await user.click(next);
+    const nextBtn = screen.getByRole("button", { name: `tile-${tiles[1]}` });
+    expect(nextBtn).toBeTruthy();
+    await user.click(nextBtn);
+    expect(calls).toContain(tiles[1]);
+
+    // prev を押して先頭からラップすると最後のタイルになる
+    await user.click(prev);
+    await user.click(prev);
+    const wrapBtn = screen.getByRole("button", { name: `tile-${tiles[32]}` });
+    expect(wrapBtn).toBeTruthy();
+    await user.click(wrapBtn);
+    expect(calls).toContain(tiles[32]);
   });
 });
