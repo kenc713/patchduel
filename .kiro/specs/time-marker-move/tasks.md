@@ -33,7 +33,7 @@
 - [ ] 3.3 統合/E2E テスト: `Board` の描画が移動を反映し、古いマーカーが消えて新しいマーカーのみが表示されることを検証する（描画 200ms 要件を含む）
   - 実行環境は既存のテストセット（vitest + jsdom）で試験、必要なら Playwright を検討
   - _Requirements: 2.1_
-- [ ] 3.4 観測性テスト: `recordPlace` の呼び出しで `prevPosition` と `moved` が正しく記録されることを検証する
+- [x] 3.4 観測性テスト: `recordPlace` の呼び出しで `prevPosition` と `moved` が正しく記録されることを検証する
   - ログまたはセッションストアの状態を検証する
   - _Requirements: 4.1, 4.2_
 
