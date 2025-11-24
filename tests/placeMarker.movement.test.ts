@@ -45,7 +45,8 @@ describe('placeMarker movement (in-place update)', () => {
 
   it('adds a new marker when another player places and does not affect existing marker', () => {
     
-    // 他のプレイヤーが新しいマーカーを配置
+    // 他のプレイヤーが新しいマーカーを配置（先に activePlayer を p2 に切り替える）
+    useGame.setState({ activePlayer: 'p2' })
     const result = useGame.getState().placeMarker('p2', 3, 3)
     expect(result).toBe(true)
 

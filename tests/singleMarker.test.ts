@@ -6,6 +6,8 @@ describe('single marker per player', () => {
     useGame.setState({ markers: [
       { id: 'm-0', playerId: 'p1', x: 0, y: 0, placedAt: new Date().toISOString() }
     ], selected: null })
+    // テスト対象は p1 の操作なので activePlayer を p1 に設定
+    useGame.setState({ activePlayer: 'p1' })
   })
 
   it('prevents placing a second marker for the same player', () => {

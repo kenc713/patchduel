@@ -88,6 +88,9 @@ const useGame = create<State>((set, get) => ({
 
     // 自分のマーカーを取得
     const ownIndex = get().markers.findIndex((m) => m.playerId === playerId)
+    
+      // 現在のアクティブプレイヤーのみが配置できるようにする
+      if (playerId !== get().activePlayer) return false
 
     // 記録用のタイムスタンプを生成
     const ts = new Date().toISOString()

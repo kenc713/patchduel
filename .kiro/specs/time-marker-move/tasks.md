@@ -2,11 +2,11 @@
 
 ## 1. ストア振る舞いの実装
 
-- [ ] 1.1 `placeMarker` を in-place 更新に変更し、既存マーカーの座標を更新する
+- [x] 1.1 `placeMarker` を in-place 更新に変更し、既存マーカーの座標を更新する
   - 既存の同一プレイヤーマーカーを検出して `x,y,placedAt` を更新する実装を行う
   - 単一の `set` 呼び出しで状態を置き換えて整合性を保つ
   - _Requirements: 1.1, 1.2, 1.3_
-- [ ] 1.2 置換時の入力検証を追加する（座標範囲、ターン、セルの占有チェック）
+- [x] 1.2 置換時の入力検証を追加する（座標範囲、ターン、セルの占有チェック）
   - 無効な操作は `false` を返し、状態を変更しないようにする
   - _Requirements: 3.1_
 - [ ] 1.3 並列性対策を組み込み、atomic な更新を保証する
@@ -15,16 +15,16 @@
 
 ## 2. セッション記録の拡張と連携
 
-- [ ] 2.1 `recordPlace` のスキーマを後方互換的に拡張する（`prevPosition?: {x,y}`, `moved?: boolean` を追加）
+- [x] 2.1 `recordPlace` のスキーマを後方互換的に拡張する（`prevPosition?: {x,y}`, `moved?: boolean` を追加）
   - 既存呼び出しがそのまま動くことを確認する
   - _Requirements: 4.1_
-- [ ] 2.2 `placeMarker` から `recordPlace` を呼ぶ際に移動情報を渡すよう更新する
+- [x] 2.2 `placeMarker` から `recordPlace` を呼ぶ際に移動情報を渡すよう更新する
   - `markerId` を保持しつつ `prevPosition` と `moved: true` を渡す
   - _Requirements: 1.1, 4.1_
 
 ## 3. テスト実装
 
-- [ ] 3.1 単体テスト: `placeMarker` の基本ケース（新規、置換、無効）を実装する
+- [x] 3.1 単体テスト: `placeMarker` の基本ケース（新規、置換、無効）を実装する
   - 各ケースで `markers` の期待状態を検証する
   - _Requirements: 1.1, 1.2, 1.3, 3.1_
 - [ ] 3.2 並列性テスト: 同一プレイヤーで短時間に複数 `placeMarker` 呼び出しを行うシミュレーションを追加する
