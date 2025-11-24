@@ -47,6 +47,27 @@ sequenceDiagram
 | State    | existing in-memory store (src/state) | GameState persistence in memory |
 | Testing  | Vitest + @testing-library/react      | Unit & integration tests        |
 
+## Configurability: タイルプールサイズ
+
+- 本設計では初期値として `TILE_POOL_SIZE = 33` を想定するが、将来的な変更を容易にするため、この値は定数または設定ファイル（`src/config/gameConfig.ts` など）で管理する。UI とゲームロジックはこの値を参照してタイルプールを生成・表示する。
+- 影響範囲: `TileSelector`、ゲーム初期化ロジック、テストデータ生成（fixture）
+
+推奨実装パターン:
+
+- `src/config/gameConfig.ts` に `export const TILE_POOL_SIZE = 33;` を定義し、必要に応じて CI/環境変数で上書き可能にする。
+
+## UI: ゴール到達時の通知（暫定）
+
+- まずは簡易なユーザー通知（トースト）でゴール到達を表示する。将来的に専用の結果画面やスコア画面に差し替え可能とする。
+- 推奨フロー:
+  1. `gameEnded` イベントを受け取った UI レイヤーがトーストを表示する。
+  2. 表示内容: 簡易メッセージ（例: `"プレイヤーXがゴールしました — ゲーム終了"`）。
+  3. 将来的な拡張ポイント: トーストクリックで結果画面へ遷移するハンドラを準備しておく。
+
+実装ノート:
+
+- トーストは既存の UI ライブラリ（ある場合）を利用し、ない場合は最小実装のコンポーネントを用意する。I18N 対応のためメッセージはローカライズキーで出すことを推奨。
+
 ## Requirements Traceability
 
 | Requirement | Summary                 | Components                                | Interfaces                 | Flows      |
