@@ -76,24 +76,24 @@ const useGame = create<State>((set, get) => ({
 
   // ボードにタイムマーカーを配置する関数を定義
   placeMarker: (playerId, x, y) => {
-    console.log('[DEBUG] placeMarker called', { playerId, x, y, activePlayer: get().activePlayer })
+    // debug logs removed
 
     let success = false
     let sessionPayload: any = null
     
     // 状態更新処理をすべて single updater 内で行うことで、操作を atomic に保証する
     set((s) => {
-      console.log('[DEBUG] placeMarker updater start', { activePlayer: s.activePlayer, markersCount: s.markers.length })
+      // updater start
       
       // 指定の座標がボード範囲内であることを確認
       if (x < 0 || x > 7 || y < 0 || y > 7) {
-        console.log('[DEBUG] placeMarker - out of bounds', { x, y })
+        // out of bounds
         return s
       }
 
       // ターンチェック: アクティブプレイヤーのみ配置可能
       if (playerId !== s.activePlayer) {
-        console.log('[DEBUG] placeMarker - not active player', { playerId, activePlayer: s.activePlayer })
+        // not active player
         return s
       }
 
@@ -114,7 +114,7 @@ const useGame = create<State>((set, get) => ({
         const next = s.markers.slice()
         next[ownIndex] = { ...next[ownIndex], x, y, placedAt: ts }
         sessionPayload = { markerId: prev.id, prevPosition: { x: prev.x, y: prev.y }, x, y, moved: true }
-        console.log('[DEBUG] placeMarker - move', { playerId, from: { x: prev.x, y: prev.y }, to: { x, y }, markerId: prev.id })
+        // move
         success = true
         return { markers: next }
       }
@@ -123,7 +123,7 @@ const useGame = create<State>((set, get) => ({
       else if (!exists) {
         const markerId = `m-${Date.now()}`
         sessionPayload = { x, y, markerId }
-        console.log('[DEBUG] placeMarker - new', { playerId, markerId, x, y })
+        // new marker
         success = true
         return { markers: [...s.markers, { id: markerId, playerId, x, y, placedAt: ts }] }
       }
