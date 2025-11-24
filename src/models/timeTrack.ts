@@ -33,6 +33,29 @@ export async function applyMove(playerId: string, steps: number): Promise<MoveRe
   if (store.setTimeMarkerIndex) {
     // 専用のセッターがあればそれを使う
     store.setTimeMarkerIndex(playerId, newIndex)
+    // ボード上のマーカー座標も更新する（UI 表示用）
+    try {
+      
+      // 新たなインデックスから移動先の座標を計算
+      const coord = timeMarker.indexToCoord(newIndex)
+
+      // グローバル状態を更新
+      useGame.setState((s: any) => {
+        const next = s.markers ? s.markers.slice() : []
+
+        // 自分のいる位置をインデックスで取得
+        const mi = next.findIndex((m: any) => m.playerId === playerId)
+
+        const ts = new Date().toISOString()
+
+        // 自分のマーカー更新を反映したマーカー配列nextを返却
+        if (mi >= 0) next[mi] = { ...next[mi], x: coord.col, y: coord.row, placedAt: ts }
+        else next.push({ id: `m-${Date.now()}`, playerId, x: coord.col, y: coord.row, placedAt: ts })
+        return { markers: next }
+      })
+    } catch (e) {
+      // indexToCoord may throw if out of range; swallow here for robustness
+    }
   } else {
     // セッターがなければ timeMarkers 配列を直接更新
     

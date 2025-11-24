@@ -45,6 +45,7 @@ export default function Board() {
             }`}
             data-x={x}
             data-y={y}
+            data-testid={`cell-${x}-${y}`}
             role="gridcell"
             tabIndex={0}
             aria-selected={isSelected}
