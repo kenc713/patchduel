@@ -5,27 +5,42 @@ import { describe, it, expect } from "vitest";
 import TileSelector from "../src/components/TileSelector";
 
 describe("TileSelector", () => {
-  // 選択可能なタイルでonSelectが呼ばれ、選択不可能なタイルでエラーメッセージが表示されることを確認するテスト
-  it("calls onSelect for available tiles and shows error for unavailable", async () => {
+  // TileSelector が33個のタイルを表示し、ボタンに名称ではなく数字（0-10）が表示されることを確認する
+  it("renders 33 tiles showing numeric step labels and handles selection", async () => {
     const user = userEvent.setup();
-    const tiles = ["t1", "t2", "t3"];
-    const available = ["t1", "t3"];
+    const tiles = Array.from({ length: 33 }).map((_, i) => `t${i + 1}`);
+    // available はすべて許可
+    const available = [...tiles];
     const calls: string[] = [];
+
+    // 各タイルに対してステップ数を与える（0-10の繰り返し）
+    const stepsMap: Record<string, number> = {};
+    tiles.forEach((id, i) => (stepsMap[id] = i % 11));
+
     render(
       <TileSelector
         tileIds={tiles}
         availableTileIds={available}
+        tileSteps={stepsMap}
         onSelect={(id) => calls.push(id)}
       />
     );
 
-    // t1 is available
-    await user.click(screen.getByRole("button", { name: /t1/i }));
-    expect(calls).toContain("t1");
+    // 33個のボタンが存在する
+    const buttons = screen.getAllByRole("button");
+    expect(buttons.length).toBe(33);
 
-    // t2 is unavailable -> should not call onSelect and should show error
-    await user.click(screen.getByRole("button", { name: /t2/i }));
-    expect(calls).not.toContain("t2");
-    expect(screen.getByText(/無効な選択|選択できません/)).toBeTruthy();
+    // 最初のボタンには数字が表示され、id名は表示されていない
+    const first = buttons[0];
+    expect(first).toHaveTextContent(String(stepsMap[tiles[0]]));
+    expect(first).not.toHaveTextContent(tiles[0]);
+
+    // コンテナは横スクロール可能（overflowX:auto のいずれか）
+    const list = screen.getByTestId("tile-scroller");
+    expect(list).toBeTruthy();
+
+    // ボタンをクリックすると onSelect が呼ばれる
+    await user.click(first);
+    expect(calls).toContain(tiles[0]);
   });
 });

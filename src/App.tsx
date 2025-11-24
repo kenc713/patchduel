@@ -5,17 +5,26 @@ import GameEndToast from "./components/GameEndToast";
 import { applyMove } from "./models/timeTrack";
 
 export default function App() {
-  // タイルに応じたステップ数を返す関数
-  const stepsFor = (id: string) => (id === "t_goal" ? 999 : 1);
+  // 33個のタイルを生成
+  const tiles = Array.from({ length: 33 }).map((_, i) => `t${i + 1}`);
+
+  // ステップ数マップ（0-10の適当な数字を割り当てる）
+  const tileSteps: Record<string, number> = {};
+  tiles.forEach((id, i) => (tileSteps[id] = i % 11));
+
+  // ゴールタイルを1つ用意（末尾に差し替え）
+  const goalId = "t_goal";
+  // replace the last tile id with t_goal for demo
+  tiles[tiles.length - 1] = goalId;
+  tileSteps[goalId] = 999; // 大きな移動値でゴールをトリガ
 
   // タイル選択時の処理
   const handleSelect = async (tileId: string) => {
-    const steps = stepsFor(tileId);
+    const steps = tileSteps[tileId] ?? 0;
     try {
       await applyMove("p1", steps);
     } catch (e) {
       // noop for demo
-      // in real app show error feedback
     }
   };
 
@@ -24,10 +33,11 @@ export default function App() {
       <h1>PatchDuel — プロトタイプ</h1>
       <Board />
 
-      {/* quick TileSelector for integration/demo */}
+      {/* TileSelector: 横スクロールで33個のタイルを表示 */}
       <TileSelector
-        tileIds={["t_goal", "t_small"]}
-        availableTileIds={["t_goal", "t_small"]}
+        tileIds={tiles}
+        availableTileIds={tiles}
+        tileSteps={tileSteps}
         onSelect={handleSelect}
       />
 

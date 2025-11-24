@@ -3,12 +3,15 @@ import React, { useState } from "react";
 type Props = {
   tileIds: string[];
   availableTileIds: string[];
+  // tile id -> steps to move (0-10)
+  tileSteps?: Record<string, number>;
   onSelect: (tileId: string) => void;
 };
 
 export default function TileSelector({
   tileIds,
   availableTileIds,
+  tileSteps = {},
   onSelect,
 }: Props) {
   const [error, setError] = useState<string | null>(null);
@@ -23,22 +26,41 @@ export default function TileSelector({
     onSelect(id);
   };
 
-  // レンダリング
+  // 横スクロール（無限風）にするためにリストを2回描画
+  const renderTiles = (repeatIndex: number) =>
+    tileIds.map((id, idx) => {
+      const available = availableTileIds.includes(id);
+      const steps = tileSteps[id] ?? 0;
+      return (
+        <button
+          key={`${id}-${repeatIndex}-${idx}`}
+          onClick={() => handleClick(id, available)}
+          aria-disabled={!available}
+          aria-label={`tile-${id}`}
+          style={{
+            minWidth: 48,
+            minHeight: 48,
+            marginRight: 8,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {String(steps)}
+        </button>
+      );
+    });
+
   return (
     <div>
-      <div role="list">
-        {tileIds.map((id) => {
-          const available = availableTileIds.includes(id);
-          return (
-            <button
-              key={id}
-              onClick={() => handleClick(id, available)}
-              aria-disabled={!available}
-            >
-              {id}
-            </button>
-          );
-        })}
+      <div
+        data-testid="tile-scroller"
+        style={{ overflowX: "auto", whiteSpace: "nowrap" }}
+      >
+        <div role="list" style={{ display: "inline-flex" }}>
+          {renderTiles(0)}
+          {renderTiles(1)}
+        </div>
       </div>
       {error && <div role="alert">{error}</div>}
     </div>
