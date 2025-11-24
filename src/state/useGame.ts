@@ -54,8 +54,8 @@ const useGame = create<State>((set, get) => ({
   // 選択は共有ステートとして保持（初期は未選択）
   selected: null,
 
-  // 初期のアクティブプレイヤー（UIの操作主体）。デフォルトは 'p2' とする。
-  activePlayer: 'p2',
+  // 初期のアクティブプレイヤー（UIの操作主体）。デフォルトは 'p1' とする。
+  activePlayer: 'p1',
   setActivePlayer: (id) => set(() => ({ activePlayer: id })),
 
   // セッション初期化: 単一プレイヤーセッションを初期化し、(0,0) に初期マーカーを配置する
@@ -76,18 +76,26 @@ const useGame = create<State>((set, get) => ({
 
   // ボードにタイムマーカーを配置する関数を定義
   placeMarker: (playerId, x, y) => {
-    
+    console.log('[DEBUG] placeMarker called', { playerId, x, y, activePlayer: get().activePlayer })
+
     let success = false
     let sessionPayload: any = null
     
     // 状態更新処理をすべて single updater 内で行うことで、操作を atomic に保証する
     set((s) => {
+      console.log('[DEBUG] placeMarker updater start', { activePlayer: s.activePlayer, markersCount: s.markers.length })
       
       // 指定の座標がボード範囲内であることを確認
-      if (x < 0 || x > 7 || y < 0 || y > 7) return s
+      if (x < 0 || x > 7 || y < 0 || y > 7) {
+        console.log('[DEBUG] placeMarker - out of bounds', { x, y })
+        return s
+      }
 
       // ターンチェック: アクティブプレイヤーのみ配置可能
-      if (playerId !== s.activePlayer) return s
+      if (playerId !== s.activePlayer) {
+        console.log('[DEBUG] placeMarker - not active player', { playerId, activePlayer: s.activePlayer })
+        return s
+      }
 
       // 他のプレイヤーが占有しているセルには置けない
       const existsIndex = s.markers.findIndex((m) => m.x === x && m.y === y)
@@ -106,6 +114,7 @@ const useGame = create<State>((set, get) => ({
         const next = s.markers.slice()
         next[ownIndex] = { ...next[ownIndex], x, y, placedAt: ts }
         sessionPayload = { markerId: prev.id, prevPosition: { x: prev.x, y: prev.y }, x, y, moved: true }
+        console.log('[DEBUG] placeMarker - move', { playerId, from: { x: prev.x, y: prev.y }, to: { x, y }, markerId: prev.id })
         success = true
         return { markers: next }
       }
@@ -114,6 +123,7 @@ const useGame = create<State>((set, get) => ({
       else if (!exists) {
         const markerId = `m-${Date.now()}`
         sessionPayload = { x, y, markerId }
+        console.log('[DEBUG] placeMarker - new', { playerId, markerId, x, y })
         success = true
         return { markers: [...s.markers, { id: markerId, playerId, x, y, placedAt: ts }] }
       }
