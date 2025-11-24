@@ -21,6 +21,8 @@ describe('session history', () => {
   it('records placeMarker and endTurn actions', () => {
     const s = useGame.getState()
     // p2 はまだマーカーを持っていないので配置できる
+    // ここで activePlayer を p2 に切り替えてから配置する
+    useGame.setState({ activePlayer: 'p2' })
     const ok = s.placeMarker('p2', 1, 1)
     expect(ok).toBe(true)
     // 履歴に追加されていること
