@@ -13,7 +13,7 @@ export default function GameEndToast() {
     const unsub = eventBus.subscribe("gameEnded", (p: any) => {
       const player = p?.winnerPlayerId ?? "プレイヤー";
       const final = p?.finalIndex;
-      setMsg(`${player}がゴールしました — ゲーム終了 (最終: ${final})`);
+      setMsg(`${player}がゴールしました。 — ゲーム終了 (最終: ${final})`);
       // 自動的に数秒で消す
       setTimeout(() => setMsg(null), 4000);
     });
@@ -24,9 +24,26 @@ export default function GameEndToast() {
 
   if (!msg) return null;
 
-  // トーストメッセージを表示
+  // トーストメッセージを表示（画面右上に固定表示するスタイル）
+  const toastStyle: React.CSSProperties = {
+    position: "fixed",
+    top: "1rem",
+    right: "1rem",
+    background: "rgba(0,0,0,0.85)",
+    color: "#fff",
+    padding: "0.5rem 0.75rem",
+    borderRadius: "6px",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+    zIndex: 9999,
+  };
+
   return (
-    <div role="status" aria-live="polite" data-testid="game-end-toast">
+    <div
+      role="status"
+      aria-live="polite"
+      data-testid="game-end-toast"
+      style={toastStyle}
+    >
       {msg}
     </div>
   );
