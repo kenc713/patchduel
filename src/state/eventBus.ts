@@ -41,9 +41,16 @@ class SimpleEventBus {
   publish(event: string, payload?: any) {
     const s = this.handlers.get(event)
     if (!s) return
-    for (const h of Array.from(s)) {
-      try { h(payload) } catch (e) { /* swallow handler errors */ }
+    const invokeHandlers = () => {
+      for (const h of Array.from(s)) {
+        try { h(payload) } catch (e) { /* swallow handler errors */ }
+      }
     }
+    // Simple synchronous invocation is sufficient; tests should use
+    // `waitFor` / `findBy*` to await UI updates instead of depending on
+    // event-bus internal wrapping. Keep publish synchronous to avoid
+    // surprising async scheduling in production.
+    invokeHandlers()
   }
 }
 

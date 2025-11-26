@@ -29,9 +29,11 @@ describe("Board -> placeMarker -> endTurn integration", () => {
 
     await user.click(cell);
 
-    // クリック後、そのセルにマーカーが描画されていること
-    const marker = cell.querySelector(".marker");
-    expect(marker).toBeTruthy();
+    // クリック後、そのセルにマーカーが描画されていることを待つ
+    await waitFor(() => {
+      const marker = cell.querySelector(".marker");
+      expect(marker).toBeTruthy();
+    });
 
     // セッション履歴に place エントリが追加されていることを待つ
     await waitFor(() => {
@@ -49,8 +51,10 @@ describe("Board -> placeMarker -> endTurn integration", () => {
 
     // endTurn を呼んで履歴に endTurn が追加されることを確認
     useGame.getState().endTurn("p1");
-    const last = useSession.getState().history.slice(-1)[0];
-    expect(last.type).toBe("endTurn");
-    expect(last.playerId).toBe("p1");
+    await waitFor(() => {
+      const last = useSession.getState().history.slice(-1)[0];
+      expect(last.type).toBe("endTurn");
+      expect(last.playerId).toBe("p1");
+    });
   });
 });

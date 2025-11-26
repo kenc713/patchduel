@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import GameEndToast from "../src/components/GameEndToast";
 import { eventBus } from "../src/state/eventBus";
@@ -9,16 +9,21 @@ describe("GameEndToast", () => {
   it("shows toast when gameEnded event is published", async () => {
     render(<GameEndToast />);
 
-    // ゲーム終了イベントを発行
-    eventBus.publish("gameEnded", {
-      winnerPlayerId: "p1",
-      reason: "goal-reached",
-      finalIndex: 63,
-    });
+    // publish inside waitFor so setState runs inside testing-library's act
+    let published = false;
+    await waitFor(() => {
+      if (!published) {
+        eventBus.publish("gameEnded", {
+          winnerPlayerId: "p1",
+          reason: "goal-reached",
+          finalIndex: 63,
+        });
+        published = true;
+      }
 
-    // トーストが表示されることを確認
-    const el = await screen.findByTestId("game-end-toast");
-    expect(el).toBeTruthy();
-    expect(el).toHaveTextContent("p1がゴールしました");
+      const el = screen.getByTestId("game-end-toast");
+      expect(el).toBeTruthy();
+      expect(el).toHaveTextContent("p1がゴールしました");
+    });
   });
 });

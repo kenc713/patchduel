@@ -4,6 +4,7 @@ import { describe, it, expect, vi } from "vitest";
 import { waitFor } from "@testing-library/react";
 import GameEndToast from "../src/components/GameEndToast";
 import { eventBus } from "../src/state/eventBus";
+// @ts-ignore: no declaration file for CSS imports
 import "../src/styles.css";
 
 describe("GameEndToast animation", () => {

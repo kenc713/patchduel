@@ -2,6 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, beforeEach, expect } from "vitest";
+import { waitFor } from "@testing-library/react";
 import App from "../src/App";
 import useGame from "../src/state/useGame";
 import useSession from "../src/state/session";
@@ -25,26 +26,32 @@ describe("E2E smoke: App -> Board -> place -> endTurn", () => {
 
     await user.click(cell);
 
-    // マーカーが描画されていること
-    const marker = cell.querySelector(".marker");
-    expect(marker).toBeTruthy();
+    // マーカーが描画されていることを待つ
+    await waitFor(() => {
+      const marker = cell.querySelector(".marker");
+      expect(marker).toBeTruthy();
+    });
 
-    // 履歴に place が追加されていること
-    const place = useSession
-      .getState()
-      .history.find(
-        (h) =>
-          h.type === "place" &&
-          h.playerId === "p2" &&
-          h.payload?.x === 2 &&
-          h.payload?.y === 0
-      );
-    expect(place).toBeTruthy();
+    // 履歴に place が追加されていることを待つ
+    await waitFor(() => {
+      const place = useSession
+        .getState()
+        .history.find(
+          (h) =>
+            h.type === "place" &&
+            h.playerId === "p2" &&
+            h.payload?.x === 2 &&
+            h.payload?.y === 0
+        );
+      expect(place).toBeTruthy();
+    });
 
     // endTurn を呼んで履歴に endTurn が追加される
     useGame.getState().endTurn("p2");
-    const last = useSession.getState().history.slice(-1)[0];
-    expect(last.type).toBe("endTurn");
-    expect(last.playerId).toBe("p2");
+    await waitFor(() => {
+      const last = useSession.getState().history.slice(-1)[0];
+      expect(last.type).toBe("endTurn");
+      expect(last.playerId).toBe("p2");
+    });
   });
 });
