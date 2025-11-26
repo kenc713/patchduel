@@ -1,5 +1,3 @@
-import React from "react";
-import "./styles.css";
 import Board from "./components/Board";
 import TileSelector from "./components/TileSelector";
 import GameEndToast from "./components/GameEndToast";

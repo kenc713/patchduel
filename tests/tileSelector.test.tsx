@@ -1,5 +1,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
+import { act } from "react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
 import TileSelector from "../src/components/TileSelector";
@@ -36,22 +37,34 @@ describe("TileSelector", () => {
     expect(currentBtn).toHaveTextContent(String(stepsMap[tiles[0]]));
 
     // クリックすると onSelect が呼ばれる
-    await user.click(currentBtn);
+    await act(async () => {
+      await user.click(currentBtn);
+    });
     expect(calls).toContain(tiles[0]);
 
     // next を押して選択を進め、中央に表示されるタイルが tiles[1] になる
-    await user.click(next);
+    await act(async () => {
+      await user.click(next);
+    });
     const nextBtn = screen.getByRole("button", { name: `tile-${tiles[1]}` });
     expect(nextBtn).toBeTruthy();
-    await user.click(nextBtn);
+    await act(async () => {
+      await user.click(nextBtn);
+    });
     expect(calls).toContain(tiles[1]);
 
     // prev を押して先頭からラップすると最後のタイルになる
-    await user.click(prev);
-    await user.click(prev);
+    await act(async () => {
+      await user.click(prev);
+    });
+    await act(async () => {
+      await user.click(prev);
+    });
     const wrapBtn = screen.getByRole("button", { name: `tile-${tiles[32]}` });
     expect(wrapBtn).toBeTruthy();
-    await user.click(wrapBtn);
+    await act(async () => {
+      await user.click(wrapBtn);
+    });
     expect(calls).toContain(tiles[32]);
   });
 });
