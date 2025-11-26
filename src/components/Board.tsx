@@ -1,8 +1,23 @@
 import React, { useState } from "react";
 import useGame from "../state/useGame";
+import { coordToIndex, GOAL_INDEX } from "../utils/trackUtils";
 
 // 正方形ボードの一辺
 const SIZE = 8;
+
+// グラデーション設定（マジックナンバーを意味ある定数に置換）
+const GRADIENT = {
+  HUE_START: 0, // 黄色寄りの色相
+  HUE_END: 130, // 緑色寄りの色相
+  SAT_BASE: 60, // %
+  SAT_DELTA: 30, // %
+  // 明度のベースと最大減少量を調整して、全体のコントラストを強める
+  LIGHT_BASE: 100, // % ベース明度
+  LIGHT_DELTA_MAX: 95, // % 最大減少量（ゴール付近で明度を強く下げる）
+  POWER: 10, // 非線形カーブの強さ
+  LINEAR_WEIGHT: 0.6, // 線形比率の重み
+  POW_WEIGHT: 0.4, // べき乗比率の重み
+};
 
 export default function Board() {
   // ゲームの状態からマーカー情報とマーカー設置関数、現在のターンのプレイヤーを取得
@@ -37,10 +52,32 @@ export default function Board() {
         const isHover = hover?.x === x && hover?.y === y;
         const isSelected = selected?.x === x && selected?.y === y;
 
-        // determine if this cell is the logical start or goal for the time track
+        // タイムトラック上でこのセルがスタートまたはゴールか判定
         const isStart = x === 0 && y === 0;
-        // According to spec the goal coord for 8x8 spiral mapping is (row:4,col:3)
-        const isGoal = x === 3 && y === 4;
+        // `coordToIndex` で螺旋インデックスを計算し `GOAL_INDEX` と比較
+        const idx = coordToIndex(y, x);
+        const isGoal = idx === GOAL_INDEX;
+
+        // スタート(0)からゴール(GOAL_INDEX)への比率を計算 (0..1)
+        const ratio = idx >= 0 ? idx / GOAL_INDEX : 0;
+
+        // 終盤での変化を強めるために非線形（べき乗）カーブを適用
+        const power = GRADIENT.POWER;
+
+        // 線形比率とべき乗カーブを混合して、中盤でもコントラストが出るようにする
+        const rPow = Math.pow(ratio, power);
+        const r2 = GRADIENT.LINEAR_WEIGHT * ratio + GRADIENT.POW_WEIGHT * rPow;
+
+        // 比率を色相にマップ（暖色→緑）
+        const hue =
+          GRADIENT.HUE_START +
+          Math.round(r2 * (GRADIENT.HUE_END - GRADIENT.HUE_START));
+
+        // ゴールに近づくほど彩度を上げ、明度を下げてコントラストを強化
+        const sat = GRADIENT.SAT_BASE + Math.round(r2 * GRADIENT.SAT_DELTA);
+        const light =
+          GRADIENT.LIGHT_BASE - Math.round(r2 * GRADIENT.LIGHT_DELTA_MAX);
+        const bgColor = `hsl(${hue} ${sat}% ${light}%)`;
 
         return (
           <div
@@ -51,6 +88,9 @@ export default function Board() {
             data-x={x}
             data-y={y}
             data-testid={`cell-${x}-${y}`}
+            data-index={idx}
+            data-bg={bgColor}
+            style={{ backgroundColor: bgColor }}
             role="gridcell"
             tabIndex={0}
             aria-selected={isSelected}
