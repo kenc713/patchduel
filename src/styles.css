@@ -12,3 +12,16 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neu
 	align-items: center;
 	gap: 1rem;
 }
+
+/* Game end toast moved from inline styles to CSS class */
+.game-end-toast {
+	position: fixed;
+	top: 1rem;
+	right: 1rem;
+	background: rgba(0,0,0,0.85);
+	color: #fff;
+	padding: 0.5rem 0.75rem;
+	border-radius: 6px;
+	box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+	z-index: 9999;
+}
