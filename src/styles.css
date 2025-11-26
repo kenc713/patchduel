@@ -25,3 +25,19 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neu
 	box-shadow: 0 6px 18px rgba(0,0,0,0.2);
 	z-index: 9999;
 }
+
+/* Animations for toast */
+@keyframes toast-fade-in {
+	from { opacity: 0; transform: translateY(-8px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toast-fade-out {
+	from { opacity: 1; transform: translateY(0); }
+	to { opacity: 0; transform: translateY(-8px); }
+}
+.game-end-toast.toast-visible {
+	animation: toast-fade-in 300ms ease both;
+}
+.game-end-toast.toast-hiding {
+	animation: toast-fade-out 300ms ease both;
+}
