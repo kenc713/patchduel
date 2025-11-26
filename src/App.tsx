@@ -1,4 +1,5 @@
 import React from "react";
+import "./styles.css";
 import Board from "./components/Board";
 import TileSelector from "./components/TileSelector";
 import GameEndToast from "./components/GameEndToast";
@@ -29,7 +30,15 @@ export default function App() {
   };
 
   return (
-    <div className="app">
+    <div
+      className="app"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "1rem",
+      }}
+    >
       <h1>PatchDuel — プロトタイプ</h1>
       <Board />
 
