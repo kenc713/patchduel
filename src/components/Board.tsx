@@ -37,12 +37,17 @@ export default function Board() {
         const isHover = hover?.x === x && hover?.y === y;
         const isSelected = selected?.x === x && selected?.y === y;
 
+        // determine if this cell is the logical start or goal for the time track
+        const isStart = x === 0 && y === 0;
+        // According to spec the goal coord for 8x8 spiral mapping is (row:4,col:3)
+        const isGoal = x === 3 && y === 4;
+
         return (
           <div
             key={`${x}-${y}`}
             className={`cell ${isHover ? "hover" : ""} ${
               isSelected ? "selected" : ""
-            }`}
+            } ${isStart ? "start" : ""} ${isGoal ? "goal" : ""}`}
             data-x={x}
             data-y={y}
             data-testid={`cell-${x}-${y}`}
